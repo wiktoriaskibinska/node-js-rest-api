@@ -19,7 +19,24 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
+  try {
+    const { contactId } = req.params;
+    const allContacts = await contacts.listContacts();
+    const [contact] = allContacts.filter((contact) => contact.id === contactId);
+    if (contact) {
+      res.json({
+        status: "success",
+        code: 200,
+        data: {
+          contact,
+        },
+      });
+    } else {
+      res.status(404).json({ message: "not found" });
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post("/", async (req, res, next) => {
