@@ -1,6 +1,9 @@
 const express = require("express");
 const contacts = require("../../models/contacts");
-
+const {
+  validateNewData,
+  validateUpdates,
+} = require("../../validators/validation");
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
@@ -39,39 +42,36 @@ router.get("/:contactId", async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
-  const { name, email, phone } = req.body;
-  if (!name || !email || !phone) {
-    return res.status(400).json({ message: "missing required field" });
+router.post("/", validateNewData, async (req, res, next) => {
+  try {
+    const newContact = await contacts.addContact(req.body);
+    res.status(201).json({
+      status: "success",
+      code: 201,
+      data: newContact,
+    });
+  } catch (error) {
+    next(error);
   }
-  const newContact = await contacts.addContact(req.body);
-  res.status(201).json({
-    status: "success",
-    code: 201,
-    data: newContact,
-  });
 });
 
 router.delete("/:contactId", async (req, res, next) => {
   const { contactId } = req.params;
-  const isDeleted = await contacts.removeContact(contactId);
-  if (isDeleted) {
-    res.status(200).json({ message: "contact deleted" });
-  } else {
-    res.status(404).json({ message: "Not found" });
+  try {
+    const isDeleted = await contacts.removeContact(contactId);
+    if (isDeleted) {
+      res.status(200).json({ message: "contact deleted" });
+    } else {
+      res.status(404).json({ message: "Not found" });
+    }
+  } catch (error) {
+    next(error);
   }
 });
 
-router.put("/:contactId", async (req, res, next) => {
+router.put("/:contactId", validateUpdates, async (req, res, next) => {
   const { contactId } = req.params;
   const updates = req.body;
-  if (
-    !updates ||
-    Object.keys(updates).length === 0 ||
-    (!updates.name && !updates.email && !updates.phone)
-  ) {
-    return res.status(400).json({ message: "missing fields" });
-  }
   try {
     const updatedContact = await contacts.updateContact(contactId, updates);
     if (!updatedContact) {
