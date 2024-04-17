@@ -4,6 +4,7 @@ const {
   validateNewData,
   validateUpdates,
 } = require("../../validators/validation");
+const { handleContactNotFound } = require("../../helpers/404handler");
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
@@ -35,7 +36,7 @@ router.get("/:contactId", async (req, res, next) => {
         },
       });
     } else {
-      res.status(404).json({ message: "not found" });
+      handleContactNotFound(req, res, next);
     }
   } catch (error) {
     next(error);
@@ -62,7 +63,7 @@ router.delete("/:contactId", async (req, res, next) => {
     if (isDeleted) {
       res.status(200).json({ message: "contact deleted" });
     } else {
-      res.status(404).json({ message: "Not found" });
+      handleContactNotFound(req, res, next);
     }
   } catch (error) {
     next(error);
@@ -75,7 +76,7 @@ router.put("/:contactId", validateUpdates, async (req, res, next) => {
   try {
     const updatedContact = await contacts.updateContact(contactId, updates);
     if (!updatedContact) {
-      return res.status(404).json({ message: "Not found" });
+      handleContactNotFound(req, res, next);
     }
     res.status(200).json(updatedContact);
   } catch (error) {
