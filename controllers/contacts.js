@@ -1,11 +1,27 @@
+//response plus uzycie metod baz danych
 const fs = require("fs/promises");
 const { nanoid } = require("nanoid");
 const path = require("path");
 const ID = nanoid();
-
 const contactsPath = path.join(__dirname, "..", "models", "contacts.json");
 console.log(contactsPath);
 
+const Contact = require("../models/contactsSchema");
+
+const getContacts = async (req, res, next) => {
+  try {
+    const results = await Contact.find();
+
+    res.json({
+      status: "success",
+      code: 200,
+      data: { results },
+    });
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};
 const listContacts = async () => {
   const data = await fs.readFile(contactsPath);
   return JSON.parse(data);
@@ -48,6 +64,7 @@ const updateContact = async (contactId, body) => {
 };
 
 module.exports = {
+  getContacts,
   listContacts,
   getContactById,
   removeContact,

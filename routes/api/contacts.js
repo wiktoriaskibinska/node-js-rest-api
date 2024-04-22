@@ -1,5 +1,4 @@
 const express = require("express");
-const contacts = require("../../controllers/contacts");
 const {
   validateNewData,
   validateUpdates,
@@ -7,15 +6,9 @@ const {
 const { handleContactNotFound } = require("../../helpers/404handler");
 const { sendResponse } = require("../../helpers/response");
 const router = express.Router();
+const ctrl = require("../../controllers/contacts");
 
-router.get("/", async (req, res, next) => {
-  try {
-    const allcontacts = await contacts.listContacts();
-    sendResponse(res, 200, { allcontacts });
-  } catch (error) {
-    next(error);
-  }
-});
+router.get("/", ctrl.getContacts);
 
 router.get("/:contactId", async (req, res, next) => {
   try {
