@@ -1,5 +1,5 @@
 const express = require("express");
-const contacts = require("../../models/contacts");
+const contacts = require("../../controllers/contacts");
 const {
   validateNewData,
   validateUpdates,
