@@ -1,18 +1,7 @@
-//response plus uzycie metod baz danych
-const fs = require("fs/promises");
-const { nanoid } = require("nanoid");
-const path = require("path");
-const ID = nanoid();
-const contactsPath = path.join(__dirname, "..", "models", "contacts.json");
 const { handleContactNotFound } = require("../helpers/404handler");
 const { sendResponse } = require("../helpers/response");
 
 const Contact = require("../models/contactsSchema");
-
-const listContacts = async () => {
-  const data = await fs.readFile(contactsPath);
-  return JSON.parse(data);
-};
 
 const getContacts = async (req, res, next) => {
   try {

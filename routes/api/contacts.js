@@ -4,8 +4,6 @@ const {
   validateUpdates,
   validateFavorite,
 } = require("../../validators/validation");
-const { handleContactNotFound } = require("../../helpers/404handler");
-const { sendResponse } = require("../../helpers/response");
 const router = express.Router();
 const ctrl = require("../../controllers/contacts");
 
