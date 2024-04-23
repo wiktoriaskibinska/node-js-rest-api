@@ -2,8 +2,9 @@ const Joi = require("joi");
 const updateSchema = Joi.object({
   name: Joi.string().min(3),
   email: Joi.string().email(),
-  phone: Joi.string().regex(/^\d{3}-\d{3}-\d{4}$/),
-}).or("name", "email", "phone");
+  phone: Joi.string().regex(/^\d{3}-\d{3}-\d{3}$/),
+  favorite: Joi.boolean().optional(),
+}).or("name", "email", "phone", "favorite");
 
 const schema = Joi.object({
   name: Joi.string().min(3).required(),

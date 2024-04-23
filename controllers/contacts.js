@@ -62,15 +62,17 @@ const addContact = async (req, res, next) => {
   }
 };
 
-const updateContact = async (contactId, body) => {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id === contactId);
-  if (index === -1) {
-    return null;
+const updateContact = async (req, res, next) => {
+  const { contactId } = req.params;
+  try {
+    const updatedContact = await Contact.findByIdAndUpdate(contactId, req.body);
+    if (!updatedContact) {
+      handleContactNotFound(req, res, next);
+    }
+    sendResponse(res, 200, { updatedContact });
+  } catch (error) {
+    next(error);
   }
-  contacts[index] = { ...contacts[index], ...body };
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return contacts[index];
 };
 
 module.exports = {
