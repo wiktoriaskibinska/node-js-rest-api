@@ -52,13 +52,14 @@ const removeContact = async (req, res, next) => {
   }
 };
 
-const addContact = async (body) => {
-  const contacts = await listContacts();
-  const { name, email, phone } = body;
-  const newContact = { ID, name, email, phone };
-  contacts.push(newContact);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return newContact;
+const addContact = async (req, res, next) => {
+  try {
+    const newContactData = req.body;
+    const newContact = await Contact.create(newContactData);
+    sendResponse(res, 201, { newContact });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const updateContact = async (contactId, body) => {

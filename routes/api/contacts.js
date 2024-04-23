@@ -12,14 +12,7 @@ router.get("/", ctrl.getContacts);
 
 router.get("/:contactId", ctrl.getContactById);
 
-router.post("/", validateNewData, async (req, res, next) => {
-  try {
-    const newContact = await contacts.addContact(req.body);
-    sendResponse(res, 201, { newContact });
-  } catch (error) {
-    next(error);
-  }
-});
+router.post("/", validateNewData, ctrl.addContact);
 
 router.delete("/:contactId", ctrl.removeContact);
 

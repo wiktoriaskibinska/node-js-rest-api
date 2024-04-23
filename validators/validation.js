@@ -11,6 +11,7 @@ const schema = Joi.object({
   phone: Joi.string()
     .regex(/^\d{3}-\d{3}-\d{3}$/)
     .required(),
+  favorite: Joi.boolean().optional(),
 });
 
 const validateNewData = (req, res, next) => {
