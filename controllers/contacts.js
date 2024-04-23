@@ -11,7 +11,6 @@ const Contact = require("../models/contactsSchema");
 const getContacts = async (req, res, next) => {
   try {
     const results = await Contact.find();
-
     res.json({
       status: "success",
       code: 200,
