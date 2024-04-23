@@ -10,20 +10,7 @@ const ctrl = require("../../controllers/contacts");
 
 router.get("/", ctrl.getContacts);
 
-router.get("/:contactId", async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    const allContacts = await contacts.listContacts();
-    const [contact] = allContacts.filter((contact) => contact.id === contactId);
-    if (contact) {
-      sendResponse(res, 200, { contact });
-    } else {
-      handleContactNotFound(req, res, next);
-    }
-  } catch (error) {
-    next(error);
-  }
-});
+router.get("/:contactId", ctrl.getContactById);
 
 router.post("/", validateNewData, async (req, res, next) => {
   try {
@@ -34,19 +21,7 @@ router.post("/", validateNewData, async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
-  const { contactId } = req.params;
-  try {
-    const isDeleted = await contacts.removeContact(contactId);
-    if (isDeleted) {
-      res.status(200).json({ message: "contact deleted" });
-    } else {
-      handleContactNotFound(req, res, next);
-    }
-  } catch (error) {
-    next(error);
-  }
-});
+router.delete("/:contactId", ctrl.removeContact);
 
 router.put("/:contactId", validateUpdates, async (req, res, next) => {
   const { contactId } = req.params;
