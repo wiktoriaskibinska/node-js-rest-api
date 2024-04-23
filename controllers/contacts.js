@@ -13,7 +13,7 @@ const listContacts = async () => {
   const data = await fs.readFile(contactsPath);
   return JSON.parse(data);
 };
-//Task.find()
+
 const getContacts = async (req, res, next) => {
   try {
     const contacts = await Contact.find();
@@ -23,7 +23,7 @@ const getContacts = async (req, res, next) => {
     next(e);
   }
 };
-//Task.findOne({ _id: id })
+
 const getContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
@@ -37,7 +37,7 @@ const getContactById = async (req, res, next) => {
     next(error);
   }
 };
-//Task.findByIdAndDelete({ _id: id })
+
 const removeContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
@@ -65,7 +65,11 @@ const addContact = async (req, res, next) => {
 const updateContact = async (req, res, next) => {
   const { contactId } = req.params;
   try {
-    const updatedContact = await Contact.findByIdAndUpdate(contactId, req.body);
+    const updatedContact = await Contact.findByIdAndUpdate(
+      contactId,
+      req.body,
+      { new: true }
+    );
     if (!updatedContact) {
       handleContactNotFound(req, res, next);
     }
@@ -74,10 +78,28 @@ const updateContact = async (req, res, next) => {
     next(error);
   }
 };
-
+const updateFavorite = async (req, res, next) => {
+  const { contactId } = req.params;
+  const { favorite } = req.body;
+  try {
+    const updatedContact = await Contact.findByIdAndUpdate(
+      contactId,
+      {
+        favorite,
+      },
+      { new: true }
+    );
+    if (!updatedContact) {
+      handleContactNotFound(req, res, next);
+    }
+    sendResponse(res, 200, { updatedContact });
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   getContacts,
-  listContacts,
+  updateFavorite,
   getContactById,
   removeContact,
   addContact,

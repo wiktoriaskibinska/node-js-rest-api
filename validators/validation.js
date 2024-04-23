@@ -15,6 +15,10 @@ const schema = Joi.object({
   favorite: Joi.boolean().optional(),
 });
 
+const updateFavSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
+
 const validateNewData = (req, res, next) => {
   const { error } = schema.validate(req.body);
   if (error) {
@@ -32,7 +36,18 @@ const validateUpdates = (req, res, next) => {
   next();
 };
 
+const validateFavorite = (req, res, next) => {
+  const { error } = updateFavSchema.validate(req.body);
+  if (error) {
+    return res
+      .status(400)
+      .json({ message: "missing fields " + error.details[0].message });
+  }
+  next();
+};
+
 module.exports = {
   validateNewData,
   validateUpdates,
+  validateFavorite,
 };

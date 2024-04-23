@@ -2,6 +2,7 @@ const express = require("express");
 const {
   validateNewData,
   validateUpdates,
+  validateFavorite,
 } = require("../../validators/validation");
 const { handleContactNotFound } = require("../../helpers/404handler");
 const { sendResponse } = require("../../helpers/response");
@@ -18,4 +19,5 @@ router.delete("/:contactId", ctrl.removeContact);
 
 router.put("/:contactId", validateUpdates, ctrl.updateContact);
 
+router.patch("/:contactId/favorite", validateFavorite, ctrl.updateFavorite);
 module.exports = router;
