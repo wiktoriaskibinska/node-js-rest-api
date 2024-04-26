@@ -6,8 +6,9 @@ const {
 } = require("../../validators/validation");
 const router = express.Router();
 const ctrl = require("../../controllers/contacts");
+const auth = require("../../validators/authenticate");
 
-router.get("/", ctrl.getContacts);
+router.get("/", auth, ctrl.getContacts);
 
 router.get("/:contactId", ctrl.getContactById);
 
