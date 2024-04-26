@@ -10,13 +10,18 @@ const auth = require("../../validators/authenticate");
 
 router.get("/", auth, ctrl.getContacts);
 
-router.get("/:contactId", ctrl.getContactById);
+router.get("/:contactId", auth, ctrl.getContactById);
 
-router.post("/", validateNewData, ctrl.addContact);
+router.post("/", validateNewData, auth, ctrl.addContact);
 
-router.delete("/:contactId", ctrl.removeContact);
+router.delete("/:contactId", auth, ctrl.removeContact);
 
-router.put("/:contactId", validateUpdates, ctrl.updateContact);
+router.put("/:contactId", validateUpdates, auth, ctrl.updateContact);
 
-router.patch("/:contactId/favorite", validateFavorite, ctrl.updateFavorite);
+router.patch(
+  "/:contactId/favorite",
+  validateFavorite,
+  auth,
+  ctrl.updateFavorite
+);
 module.exports = router;
