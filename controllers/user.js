@@ -19,7 +19,7 @@ const register = async (req, res, next) => {
       status: "success",
       code: 201,
       data: {
-        message: "Registration successful",
+        newUser,
       },
     });
   } catch (error) {
