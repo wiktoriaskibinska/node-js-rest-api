@@ -32,3 +32,10 @@ const login = async (req, res, next) => {};
 const logout = async (req, res, next) => {};
 
 const current = async (req, res, next) => {};
+
+module.exports = {
+  register,
+  login,
+  logout,
+  current,
+};
