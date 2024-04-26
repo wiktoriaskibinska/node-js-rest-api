@@ -20,5 +20,8 @@ const userSchema = new Schema({
     default: null,
   },
 });
+userSchema.methods.setPassword = function (password) {
+  this.password = bCrypt.hashSync(password, bCrypt.genSaltSync(6));
+};
 const User = model("User", userSchema);
 module.exports = User;
