@@ -1,21 +1,36 @@
 const User = require("../models/userSchema");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const jimp = require("jimp");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs");
+
 require("dotenv").config();
 const secret = process.env.SECRET;
+const tmpDir = path.join(__dirname, "tmp");
+const publicDir = path.join(__dirname, "public");
+const avatarsDir = path.join(publicDir, "avatars");
 
 const register = async (req, res, next) => {
   const { username, email, password } = req.body;
   const user = await User.findOne({ email });
-  if (user) {
-    return res.status(409).json({
-      status: "error",
-      code: 409,
-      message: "Email is already in use",
-      data: "Conflict",
-    });
-  }
   try {
-    const newUser = new User({ username, email });
+    if (user) {
+      return res.status(409).json({
+        status: "error",
+        code: 409,
+        message: "Email is already in use",
+        data: "Conflict",
+      });
+    }
+
+    const avatarURL = gravatar.url(req.body.email, {
+      s: "250",
+      r: "pg",
+      d: "identicon",
+    });
+    const newUser = new User({ username, email, avatarURL });
     newUser.setPassword(password);
     await newUser.save();
     res.status(201).json({
