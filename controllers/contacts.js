@@ -2,10 +2,11 @@ const { handleContactNotFound } = require("../helpers/404handler");
 const { sendResponse } = require("../helpers/response");
 
 const Contact = require("../models/contactsSchema");
+const User = require("../models/userSchema");
 
 const getContacts = async (req, res, next) => {
   try {
-    const contacts = await Contact.find();
+    const contacts = await Contact.find({ owner: req.user._id });
     sendResponse(res, 200, { contacts });
   } catch (e) {
     console.error(e);
@@ -16,7 +17,10 @@ const getContacts = async (req, res, next) => {
 const getContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await Contact.findOne({ _id: contactId });
+    const contact = await Contact.findOne({
+      _id: contactId,
+      owner: req.user._id,
+    });
     if (contact) {
       sendResponse(res, 200, { contact });
     } else {
@@ -30,7 +34,10 @@ const getContactById = async (req, res, next) => {
 const removeContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const deleted = await Contact.findByIdAndDelete({ _id: contactId });
+    const deleted = await Contact.findByIdAndDelete({
+      _id: contactId,
+      owner: req.user._id,
+    });
     if (deleted) {
       res.status(200).json({ message: "contact deleted" });
     } else {
@@ -43,7 +50,7 @@ const removeContact = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
   try {
-    const newContactData = req.body;
+    const newContactData = { ...req.body, owner: req.user._id };
     const newContact = await Contact.create(newContactData);
     sendResponse(res, 201, { newContact });
   } catch (error) {
@@ -55,7 +62,7 @@ const updateContact = async (req, res, next) => {
   const { contactId } = req.params;
   try {
     const updatedContact = await Contact.findByIdAndUpdate(
-      contactId,
+      { _id: contactId, owner: req.user._id },
       req.body,
       { new: true }
     );
@@ -73,9 +80,7 @@ const updateFavorite = async (req, res, next) => {
   try {
     const updatedContact = await Contact.findByIdAndUpdate(
       contactId,
-      {
-        favorite,
-      },
+      { favorite },
       { new: true }
     );
     if (!updatedContact) {
