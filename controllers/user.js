@@ -1,6 +1,5 @@
 const User = require("../models/userSchema");
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
 const jimp = require("jimp");
 const gravatar = require("gravatar");
 const path = require("path");
@@ -8,8 +7,7 @@ const fs = require("fs");
 
 require("dotenv").config();
 const secret = process.env.SECRET;
-const tmpDir = path.join(__dirname, "tmp");
-const publicDir = path.join(__dirname, "public");
+const publicDir = path.join(__dirname, "..", "public");
 const avatarsDir = path.join(publicDir, "avatars");
 
 const register = async (req, res, next) => {
@@ -100,23 +98,37 @@ const current = async (req, res, next) => {
   res.json({
     status: "succes",
     code: 200,
-    data: { email: user.email, subscription: user.subscription },
+    data: {
+      email: user.email,
+      subscription: user.subscription,
+      avatar: user.avatarURL || null,
+    },
   });
 };
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, tmpDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  },
-});
-
-const upload = multer({ storage });
-
 const updateAvatar = async (req, res, next) => {
-  const user = req.user;
+  try {
+    const { file, user } = req;
+    const image = await jimp.read(file.path);
+    await image.resize(250, 250).writeAsync(file.path);
+    const newFilename = `${Date.now()}-${file.originalname}`;
+    const newFilePath = path.join(avatarsDir, newFilename);
+    await fs.promises.rename(file.path, newFilePath);
+    const avatarURL = `/avatars/${newFilename}`;
+    await User.findByIdAndUpdate(user._id, {
+      avatarURL: avatarURL,
+    });
+
+    res.json({
+      status: "success",
+      code: 200,
+      data: {
+        avatarURL,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Błąd podczas aktualizacji awatara" });
+  }
 };
 
 module.exports = {
@@ -124,4 +136,5 @@ module.exports = {
   login,
   logout,
   current,
+  updateAvatar,
 };
