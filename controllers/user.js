@@ -104,6 +104,21 @@ const current = async (req, res, next) => {
   });
 };
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, tmpDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+const updateAvatar = async (req, res, next) => {
+  const user = req.user;
+};
+
 module.exports = {
   register,
   login,
