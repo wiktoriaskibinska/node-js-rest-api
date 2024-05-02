@@ -130,10 +130,6 @@ const updateAvatar = async (req, res, next) => {
     res.status(500).json({ message: "Błąd podczas aktualizacji awatara" });
   }
 };
-const getTokenFromHeader = (req) => {
-  const authHeader = req.headers["authorization"] || "";
-  req.token = authHeader.split(" ")[1]; // Pobierz token po słowie 'Bearer'
-};
 
 module.exports = {
   register,
