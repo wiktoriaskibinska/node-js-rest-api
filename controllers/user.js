@@ -137,5 +137,4 @@ module.exports = {
   logout,
   current,
   updateAvatar,
-  getTokenFromHeader,
 };
