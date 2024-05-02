@@ -11,9 +11,9 @@ const publicDir = path.join(__dirname, "..", "public");
 const avatarsDir = path.join(publicDir, "avatars");
 
 const register = async (req, res, next) => {
-  const { username, email, password } = req.body;
-  const user = await User.findOne({ email });
   try {
+    const { username, email, password } = req.body;
+    const user = await User.findOne({ email });
     if (user) {
       return res.status(409).json({
         status: "error",
@@ -58,7 +58,7 @@ const login = async (req, res, next) => {
 
   const payload = {
     id: user._id,
-    username: user.username,
+    email: user.email,
   };
 
   const token = jwt.sign(payload, secret, { expiresIn: "1h" });
@@ -130,6 +130,10 @@ const updateAvatar = async (req, res, next) => {
     res.status(500).json({ message: "Błąd podczas aktualizacji awatara" });
   }
 };
+const getTokenFromHeader = (req) => {
+  const authHeader = req.headers["authorization"] || "";
+  req.token = authHeader.split(" ")[1]; // Pobierz token po słowie 'Bearer'
+};
 
 module.exports = {
   register,
@@ -137,4 +141,5 @@ module.exports = {
   logout,
   current,
   updateAvatar,
+  getTokenFromHeader,
 };
