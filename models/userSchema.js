@@ -20,6 +20,10 @@ const userSchema = new Schema({
     type: String,
     default: null,
   },
+  avatarURL: {
+    type: String,
+    default: null,
+  },
 });
 userSchema.methods.setPassword = function (password) {
   this.password = bCrypt.hashSync(password, bCrypt.genSaltSync(6));
