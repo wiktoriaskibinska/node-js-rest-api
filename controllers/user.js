@@ -4,15 +4,25 @@ const jimp = require("jimp");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs");
-
+const formData = require("form-data");
+const Mailgun = require("mailgun.js");
+const { nanoid } = require("nanoid");
 require("dotenv").config();
 const secret = process.env.SECRET;
 const publicDir = path.join(__dirname, "..", "public");
 const avatarsDir = path.join(publicDir, "avatars");
+const MAILGUN_KEY = process.env.MAILGUN_KEY;
+const MAILGUN_DOMAIN = process.env.DOMAIN;
+
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({
+  username: "api",
+  key: MAILGUN_KEY,
+});
 
 const register = async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (user) {
       return res.status(409).json({
@@ -28,9 +38,25 @@ const register = async (req, res, next) => {
       r: "pg",
       d: "identicon",
     });
-    const newUser = new User({ username, email, avatarURL });
+    const verificationToken = nanoid();
+    const newUser = new User({ email, avatarURL });
+    newUser.verificationToken = verificationToken;
+    newUser.verify = false;
     newUser.setPassword(password);
     await newUser.save();
+    const verificationUrl = `http://localhost:8080/users/verify/${verificationToken}`;
+    const data = {
+      from: "Wika <wikas4000@wp.pl>",
+      to: newUser.email,
+      subject: "Please verify your email",
+      text: `Kliknij ten link, aby zweryfikować swój email: ${verificationUrl}`,
+      html: `<strong>Kliknij ten link, aby zweryfikować swój email:</strong> <a href="${verificationUrl}">${verificationUrl}</a>`,
+    };
+    mg.messages
+      .create(MAILGUN_DOMAIN, data)
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err));
+
     res.status(201).json({
       status: "success",
       code: 201,
@@ -47,11 +73,11 @@ const login = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
-  if (!user || !user.validPassword(password)) {
+  if (!user || !user.validPassword(password) || !user.verify) {
     return res.status(400).json({
       status: "error",
       code: 400,
-      message: "Incorrect login or password",
+      message: "Incorrect login or password or unverified email",
       data: "Bad request",
     });
   }
@@ -130,6 +156,59 @@ const updateAvatar = async (req, res, next) => {
     res.status(500).json({ message: "Błąd podczas aktualizacji awatara" });
   }
 };
+const verifyemail = async (req, res, next) => {
+  try {
+    const user = await User.findOne({
+      verificationToken: req.params.verificationToken,
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification link has already been used" });
+    }
+    user.verify = true;
+    user.verificationToken = null;
+    await user.save();
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resendEmail = async (req, res, next) => {
+  try {
+    const email = req.body.email;
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification has already been passed" });
+    }
+    const verificationToken = user.verificationToken;
+    const verificationUrl = `http://localhost:8080/users/verify/${verificationToken}`;
+    const data = {
+      from: "Wika <wikas4000@wp.pl>",
+      to: user.email,
+      subject: "Please verify your email",
+      text: `Kliknij ten link, aby zweryfikować swój email: ${verificationUrl}`,
+      html: `<strong>Kliknij ten link, aby zweryfikować swój email:</strong> <a href="${verificationUrl}">${verificationUrl}</a>`,
+    };
+    mg.messages
+      .create(MAILGUN_DOMAIN, data)
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err));
+
+    res.status(200).json({ message: "Verification email sent" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   register,
@@ -137,4 +216,6 @@ module.exports = {
   logout,
   current,
   updateAvatar,
+  verifyemail,
+  resendEmail,
 };

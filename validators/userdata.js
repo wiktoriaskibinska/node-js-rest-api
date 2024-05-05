@@ -1,11 +1,11 @@
 const Joi = require("joi");
 
 const credentialsSchema = Joi.object({
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
+  password: Joi.string().required(),
   email: Joi.string()
     .email({
       minDomainSegments: 2,
-      tlds: { allow: ["com", "net", "pl"] },
+      tlds: { allow: ["com", "net", "pl", "gmail"] },
     })
     .required(),
 });
@@ -16,5 +16,17 @@ const validateCredentials = async (req, res, next) => {
   }
   next();
 };
-
-module.exports = validateCredentials;
+const emailSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "missing required field email",
+  }),
+});
+const validateEmail = async (req, res, next) => {
+  const { error } = emailSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+module.exports = { validateCredentials, validateEmail };
