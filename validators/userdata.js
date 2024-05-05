@@ -1,11 +1,11 @@
 const Joi = require("joi");
 
 const credentialsSchema = Joi.object({
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
+  password: Joi.string().required(),
   email: Joi.string()
     .email({
       minDomainSegments: 2,
-      tlds: { allow: ["com", "net", "pl"] },
+      tlds: { allow: ["com", "net", "pl", "gmail"] },
     })
     .required(),
 });

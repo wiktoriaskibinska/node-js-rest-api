@@ -28,5 +28,6 @@ router.post("/logout", auth, ctrl.logout);
 router.get("/current", auth, ctrl.current);
 
 router.post("/avatars", auth, upload.single("avatar"), ctrl.updateAvatar);
+router.get("/verify/:veridicationToken", ctrl.verifyemail);
 
 module.exports = router;
