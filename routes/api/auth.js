@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 const ctrl = require("../../controllers/user");
 const auth = require("../../validators/authenticate");
-const validateCredentials = require("../../validators/userdata");
+const {
+  validateCredentials,
+  validateEmail,
+} = require("../../validators/userdata");
 const multer = require("multer");
 const path = require("path");
 
@@ -28,6 +31,9 @@ router.post("/logout", auth, ctrl.logout);
 router.get("/current", auth, ctrl.current);
 
 router.post("/avatars", auth, upload.single("avatar"), ctrl.updateAvatar);
-router.get("/verify/:veridicationToken", ctrl.verifyemail);
+
+router.get("/verify/:verificationToken", ctrl.verifyemail);
+
+router.post("/verify", validateEmail, ctrl.resendEmail);
 
 module.exports = router;

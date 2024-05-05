@@ -54,8 +54,8 @@ const register = async (req, res, next) => {
     };
     mg.messages
       .create(MAILGUN_DOMAIN, data)
-      .then((msg) => console.log(msg)) // logs response data
-      .catch((err) => console.log(err)); // logs any error
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err));
 
     res.status(201).json({
       status: "success",
@@ -164,12 +164,49 @@ const verifyemail = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification link has already been used" });
+    }
     user.verify = true;
     user.verificationToken = null;
     await user.save();
     res.status(200).json({ message: "Verification successful" });
   } catch (error) {
-    next(error); // Przekazuje błąd do obsługi błędów
+    next(error);
+  }
+};
+
+const resendEmail = async (req, res, next) => {
+  try {
+    const email = req.body.email;
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification has already been passed" });
+    }
+    const verificationToken = user.verificationToken;
+    const verificationUrl = `http://localhost:8080/users/verify/${verificationToken}`;
+    const data = {
+      from: "Wika <wikas4000@wp.pl>",
+      to: user.email,
+      subject: "Please verify your email",
+      text: `Kliknij ten link, aby zweryfikować swój email: ${verificationUrl}`,
+      html: `<strong>Kliknij ten link, aby zweryfikować swój email:</strong> <a href="${verificationUrl}">${verificationUrl}</a>`,
+    };
+    mg.messages
+      .create(MAILGUN_DOMAIN, data)
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err));
+
+    res.status(200).json({ message: "Verification email sent" });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -180,4 +217,5 @@ module.exports = {
   current,
   updateAvatar,
   verifyemail,
+  resendEmail,
 };

@@ -16,5 +16,17 @@ const validateCredentials = async (req, res, next) => {
   }
   next();
 };
-
-module.exports = validateCredentials;
+const emailSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "missing required field email",
+  }),
+});
+const validateEmail = async (req, res, next) => {
+  const { error } = emailSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+  next();
+};
+module.exports = { validateCredentials, validateEmail };
